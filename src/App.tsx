@@ -1,112 +1,4 @@
-// import React, { useState } from "react";
-// import Modal from "./modules/Modal";
-// import Step1Audit from "./modules/Step1Audit";
-// import type { AuditData } from "./modules/Step1Audit";
-// import Step2Choises from "./modules/Step2Choises";
-// import type { ChoicesData } from "./modules/Step2Choises";
-// import Step3Result from "./modules/Step3Result";
-// import Step4Community from "./modules/Step4Community";
-// import { calculator } from "./utils/calculator";
-// import Header from "./components/Header";
-// import Button from "./components/Button";
-// import Footer from "./components/Footer";
-// import { images } from './assets/images';
-// import type { ResultData } from "./utils/calculator";
-
-// const App: React.FC = () => {
-//   const [showModal, setShowModal] = useState(false);
-//   const [currentStep, setCurrentStep] = useState<number>(1);
-
-//   const [auditData, setAuditData] = useState<AuditData>({
-//     systemCount: 0,
-//     outdatedSystems: 0,
-//     budget: 0,
-//   });
-
-//   const [choicesData, setChoicesData] = useState<ChoicesData>({
-//     applyLinux: false,
-//     enableReconditioning: false,
-//     secureNetwork: false,
-//   });
-
-//   const [resultData, setResultData] = useState<ResultData | null>(null);
-
-//   const openSimulator = () => {
-//     // reset minimal
-//     setCurrentStep(1);
-//     setAuditData({ systemCount: 0, outdatedSystems: 0, budget: 0 });
-//     setChoicesData({
-//       applyLinux: false,
-//       enableReconditioning: false,
-//       secureNetwork: false,
-//     });
-//     setResultData(null);
-//     setShowModal(true);
-//   };
-
-//   const handleCompleteAudit = (data: AuditData) => {
-//     setAuditData(data);
-//     setCurrentStep(2);
-//   };
-
-//   const handleCompleteChoices = (data: ChoicesData) => {
-//     setChoicesData(data);
-//     // compute results and go to step 3
-//     const result = calculator(auditData, data);
-//     setResultData(result);
-//     setCurrentStep(3);
-//   };
-
-//   const handleFromStep3Next = (res: ResultData) => {
-//     setResultData(res);
-//     setCurrentStep(4);
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-//       {!showModal && (
-//         <div className="text-center space-y-6">
-//           <h1 className="text-3xl font-bold">🌐 Village Numérique</h1>
-//           <p className="text-gray-700">
-//             Découvrez comment un établissement scolaire peut devenir autonome et résistant face aux Big Tech.
-//           </p>
-//           <button
-//             onClick={() => { handleReset(); setShowModal(true); }}
-//             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-//           >
-//             🚀 Lancer le simulateur
-//           </button>
-//         </div>
-//       )}
-
-//       {showModal && (
-//         <Modal onClose={() => setShowModal(false)}>
-//           {currentStep === 1 && (
-//             <Step1Audit initialData={auditData} onComplete={handleCompleteAudit} />
-//           )}
-//           {currentStep === 2 && (
-//             <Step2Choises
-//               initialData={choicesData}
-//               onBack={handlePrevStep}
-//               onComplete={handleCompleteChoices}
-//             />
-//           )}
-//           {currentStep === 3 && resultData && (
-//             <Step3Result data={resultData} onBack={handlePrevStep} onNext={handleNextStep} />
-//           )}
-//           {currentStep === 4 && (
-//             <Step4Community onFinish={() => setShowModal(false)} />
-//           )}
-//         </Modal>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default App;
-
-
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "./modules/Modal";
 import Step1Audit from "./modules/Step1Audit";
 import Step2Choises from "./modules/Step2Choises";
@@ -115,24 +7,96 @@ import Step4Community from "./modules/Step4Community";
 import { calculator, type ResultData } from "./utils/calculator";
 import type { AuditData } from "./modules/Step1Audit";
 import type { ChoicesData } from "./modules/Step2Choises";
-import img1 from "./assets/img/img1.png"
-import img2 from "./assets/img/img2.png"
-import img3 from "./assets/img/img3.png"
-import img4 from "./assets/img/img4.png"
+import img1 from "./assets/img/img1.png";
+import img2 from "./assets/img/img2.png";
+import img3 from "./assets/img/img3.png";
+import img4 from "./assets/img/img4.png";
 import Button from "./components/Button";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { data } from "./utils/calculator"; // Importer les données par défaut
+import { data } from "./utils/calculator";
+import SnakeGame from "./components/SnakeGame";
+
+const KONAMI = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+  "Enter",
+];
 
 const App: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const [auditData, setAuditData] = useState<AuditData>(data.defaultAudit);
-
   const [choicesData, setChoicesData] = useState<ChoicesData>(data.defaultChoices);
-
   const [resultData, setResultData] = useState<ResultData | null>(null);
+
+  // --- secret snake state ---
+  const [showSnake, setShowSnake] = useState<boolean>(false);
+  const [snakeResult, setSnakeResult] = useState<{ score: number } | null>(null);
+  const konamiRef = useRef<string[]>([]);
+  const clickCountRef = useRef<number>(0);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // normalize: keep Arrow... as-is, single chars to lowercase, Enter/Escape handled by text
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      konamiRef.current.push(key);
+      if (konamiRef.current.length > KONAMI.length) konamiRef.current.shift();
+
+      // build comparable arrays
+      const recent = konamiRef.current;
+      const target = KONAMI.map(k => (k.length === 1 ? k : k));
+      if (recent.length === target.length) {
+        let match = true;
+        for (let i = 0; i < target.length; i++) {
+          const r = recent[i];
+          const t = target[i];
+          if (t.length === 1) {
+            if (r !== t) { match = false; break; }
+          } else {
+            if (r !== t) { match = false; break; }
+          }
+        }
+        if (match) {
+          setShowSnake(true);
+          konamiRef.current = [];
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const handleTitleClick = () => {
+    clickCountRef.current += 1;
+    if (clickCountRef.current >= 5) {
+      setShowSnake(true);
+      clickCountRef.current = 0;
+    }
+    // reset si inactivité
+    setTimeout(() => {
+      clickCountRef.current = 0;
+    }, 1200);
+  };
+
+  const handleSnakeEnd = (score: number) => {
+    // pas d'alert: stocker le score et fermer l'overlay de jeu
+    setShowSnake(false);
+    setSnakeResult({ score });
+    console.log("Snake score", score);
+  };
+
+  const handleSnakeClose = () => setShowSnake(false);
+  // --- fin snake state ---
 
   const handleNextStep = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
@@ -142,22 +106,21 @@ const App: React.FC = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleCompleteAudit = (data: AuditData) => {
-    setAuditData(data);
+  const handleCompleteAudit = (d: AuditData) => {
+    setAuditData(d);
     handleNextStep();
   };
 
-  const handleCompleteChoices = (data: ChoicesData) => {
-    setChoicesData(data);
-    const result = calculator(auditData, data);
-    setResultData(result);
+  const handleCompleteChoices = (d: ChoicesData) => {
+    setChoicesData(d);
+    const res = calculator(auditData, d);
+    setResultData(res);
     handleNextStep();
   };
 
   const handleReset = () => {
     setCurrentStep(1);
-    // Utiliser les valeurs par défaut
-    setAuditData(data.defaultAudit); 
+    setAuditData(data.defaultAudit);
     setChoicesData(data.defaultChoices);
     setResultData(null);
   };
@@ -168,7 +131,10 @@ const App: React.FC = () => {
       <main className="bg-gray-50 min-h-screen px-6 py-10 flex flex-col items-center">
         {!showModal && (
           <>
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+            <h1
+              onClick={handleTitleClick}
+              className="text-3xl font-bold text-center text-gray-800 mb-2 select-none"
+            >
               L'Histoire NIRD : Évaluer l'Impact Réel
             </h1>
             <p className="text-sm text-gray-500 mb-6">Étape 1 sur 6</p>
@@ -199,41 +165,18 @@ const App: React.FC = () => {
             </section>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-              {/* Ligne du haut : 3 cases */}
-              <img
-                src={img1}
-                alt="Durabilité"
-                className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg"
-              />
-              <img
-                src={img2}
-                alt="Inclusion"
-                className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg"
-              />
-              <img
-                src={img3}
-                alt="Responsabilité"
-                className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg"
-              />
-
-              {/* Ligne du bas : alignée sous la première case */}
+              <img src={img1} alt="Durabilité" className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg" />
+              <img src={img2} alt="Inclusion" className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg" />
+              <img src={img3} alt="Responsabilité" className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg" />
               <div className="md:col-span-1">
-                <img
-                  src={img4}
-                  alt="Évaluation"
-                  className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg"
-                />
+                <img src={img4} alt="Évaluation" className="rounded-lg shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg" />
               </div>
             </div>
 
-
-
-            <Button onClick={() => { handleReset(); setShowModal(true); }}
-            >
+            <Button onClick={() => { handleReset(); setShowModal(true); }}>
               🚀 Lancer le simulateur
             </Button>
           </>
-
         )}
 
         {showModal && (
@@ -242,33 +185,49 @@ const App: React.FC = () => {
               <Step1Audit initialData={auditData} onComplete={handleCompleteAudit} />
             )}
             {currentStep === 2 && (
-              <Step2Choises
-                initialData={choicesData}
-                onBack={handlePrevStep}
-                onComplete={handleCompleteChoices}
-              />
+              <Step2Choises initialData={choicesData} onBack={handlePrevStep} onComplete={handleCompleteChoices} />
             )}
             {currentStep === 3 && resultData && (
-              <Step3Result 
-                result={resultData} 
-                onBack={handlePrevStep} 
-                onNext={handleNextStep} 
-              />
+              <Step3Result result={resultData} onBack={handlePrevStep} onNext={handleNextStep} />
             )}
-            {currentStep === 4 && resultData && ( // Ajout de resultData pour Step4
-              <Step4Community 
-                result={resultData} 
-                onFinish={() => setShowModal(false)} 
-              />
+            {currentStep === 4 && resultData && (
+              <Step4Community result={resultData} onFinish={() => setShowModal(false)} />
             )}
-            {/* Si un pas est manquant ou que resultData n'est pas prêt, ne rien afficher ou un loader */}
-            {currentStep > 4 && (
-                <div className="text-center p-8">Fin de la simulation.</div>
-            )}
+            {currentStep > 4 && <div className="text-center p-8">Fin de la simulation.</div>}
           </Modal>
         )}
       </main>
+
       <Footer />
+
+      {/* Snake caché */}
+      {showSnake && (
+        <SnakeGame onGameEnd={handleSnakeEnd} onClose={handleSnakeClose} />
+      )}
+
+      {/* Résultat stylé (remplace alert) */}
+      {snakeResult && (
+        <div className="fixed bottom-6 right-6 z-60">
+          <div className="bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg shadow-2xl border border-green-600 max-w-xs">
+            <h4 className="text-lg font-extrabold mb-1">🎉 Fin de partie</h4>
+            <p className="text-green-300 text-2xl font-bold mb-3">{snakeResult.score} pts</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setSnakeResult(null)}
+                className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 transition"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={() => { setSnakeResult(null); setShowSnake(true); }}
+                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition"
+              >
+                Rejouer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
