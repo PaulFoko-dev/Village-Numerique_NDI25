@@ -1,13 +1,14 @@
-// Step1Audit.tsx
 import React, { useState } from 'react';
 import Button from '../components/Button';
-import { ShieldCheck, Leaf, Users } from 'lucide-react';
+import { ShieldCheck, Leaf, Users, ArrowLeft } from 'lucide-react';
 import bg_img from '../assets/img/le-village-d-asterix.jpg';
 
 export type AuditData = {
   systemCount: number;
   outdatedSystems: number;
   budget: number;
+  itStaffCount: number;
+  externalDataPercent: number;
 };
 
 interface Step1AuditProps {
@@ -32,137 +33,184 @@ const PilierCard: React.FC<PilierCardProps> = ({ Icon, title, description, iconC
     </div>
     <p className="text-sm text-gray-600 mb-4">{description}</p>
     <div className="mt-auto text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full w-fit">
-      5 questions
+      4 questions
+    </div>
+  </div>
+);
+
+const FormField: React.FC<{
+  label: string;
+  name: keyof AuditData;
+  unit: string;
+  min?: number;
+  max?: number;
+  value: number;
+  onChange: (e: un) => void;
+}> = ({ label, name, unit, min = 0, max, value, onChange }) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      {label}
+    </label>
+    <div className="mt-1 relative rounded-md shadow-sm">
+      <input
+        type="number"
+        name={name}
+        id={name}
+        inputMode="numeric"
+        min={min}
+        max={max}
+        value={value}
+        onChange={onChange}
+        className="block w-full rounded-md border-gray-300 pr-10 focus:border-green-600 focus:ring-green-600 sm:text-sm"
+      />
+      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <span className="text-gray-500 sm:text-sm">{unit}</span>
+      </div>
     </div>
   </div>
 );
 
 const Step1Audit: React.FC<Step1AuditProps> = ({ initialData, onComplete }) => {
   const [auditInput, setAuditInput] = useState<AuditData>(initialData);
+  const [subStep, setSubStep] = useState<1 | 2>(1);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let num = Number(value);
+
+    if (name === 'externalDataPercent') {
+      num = Math.max(0, Math.min(100, num));
+    } else {
+      num = Math.max(0, num);
+    }
+
+    setAuditInput(prev => ({ ...prev, [name]: num }));
+  };
+
+  const handleStartQuiz = () => onComplete(auditInput);
 
   const piliers = [
     {
       Icon: ShieldCheck,
       title: 'Pilier 1 : Responsabilité',
-      description:
-        "Évaluez votre engagement éthique, la conformité de vos pratiques et votre contribution sociale.",
+      description: 'Éthique numérique, protection des données, impact social des technologies.',
       iconColor: 'text-green-600',
     },
     {
       Icon: Leaf,
       title: 'Pilier 2 : Durabilité',
       description:
-        "Mesurez l'impact environnemental de vos activités numériques et vos efforts pour une sobriété éco-responsable.",
+        'Empreinte environnementale, efficacité énergétique, économie circulaire, longévité des équipements.',
       iconColor: 'text-blue-600',
     },
     {
       Icon: Users,
       title: 'Pilier 3 : Inclusion',
       description:
-        "Analysez l'accessibilité de vos outils, la diversité de vos équipes et l'équité de vos actions.",
+        "Accessibilité et équité pour tous. Valorisation de la diversité et suppression des barrières numériques.",
       iconColor: 'text-purple-600',
     },
   ];
 
-  const handleStartQuiz = () => onComplete(auditInput);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    // Empêche les valeurs négatives et énorme dépassement
-    const num = Math.max(0, Number(value));
-    setAuditInput(prev => ({ ...prev, [name]: num }));
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/20" />
-
-      {/* Modal wrapper */}
-      <div className="relative bg-white w-full max-w-screen-lg mx-auto rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Header decor + safe area */}
-        <div className="relative">
-          {/* Décor: image en fond, cachée en <sm, taille maîtrisée sinon */}
-          <img
-            src={bg_img}
-            alt="Décor village"
-            className="absolute -top-6 -right-6 hidden md:block w-40 lg:w-56 opacity-15 pointer-events-none select-none"
-          />
-          <div className="px-5 sm:px-6 lg:px-8 pt-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              1. Audit et Données Initiales
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Entrez les données de votre établissement pour lancer la simulation d&apos;impact, puis
-              découvrez vos trois piliers.
-            </p>
-          </div>
-        </div>
-
-        {/* Scrollable content area */}
-        <div className="px-5 sm:px-6 lg:px-8 pb-6 max-h-[75vh] overflow-y-auto">
-          {/* Formulaire */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Total de systèmes
-              </label>
-              <input
-                type="number"
-                name="systemCount"
-                inputMode="numeric"
-                min={0}
-                value={auditInput.systemCount}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-600 focus:ring-green-600 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Systèmes obsolètes
-              </label>
-              <input
-                type="number"
-                name="outdatedSystems"
-                inputMode="numeric"
-                min={0}
-                value={auditInput.outdatedSystems}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-600 focus:ring-green-600 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Budget Licences (€)
-              </label>
-              <input
-                type="number"
-                name="budget"
-                inputMode="numeric"
-                min={0}
-                value={auditInput.budget}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-600 focus:ring-green-600 sm:text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Cartes des piliers */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {piliers.map((p, idx) => (
-              <PilierCard key={idx} {...p} />
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="flex flex-col items-center mt-6">
-            <p className="text-base text-gray-700 mb-4 text-center">
-              Prêt à évaluer l&apos;impact des choix NIRD ?
-            </p>
-            <Button onClick={handleStartQuiz}>Continuer vers les choix de stratégies →</Button>
-          </div>
+    <div className="space-y-6">
+      <div className="relative">
+        <img src={bg_img} alt="Décor village" className="absolute top-0 right-8 hidden md:block w-[10%] z-0 animate-[slideIn_1.5s_ease-in-out_forwards,_floating_6s_ease-in-out_infinite]" />
+        <div className="pt-6 pb-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {subStep === 1 ? '1.1 Découverte des Piliers NIRD' : '1.2 Audit et Données Initiales'}
+          </h2>
+          <p className="text-gray-600 mt-1">
+            {subStep === 1
+              ? 'Le référentiel NIRD repose sur trois piliers fondamentaux.'
+              : 'Entrez les données clés de votre établissement.'}
+          </p>
         </div>
       </div>
+
+      {subStep === 1 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            {piliers.map((p, i) => (
+              <PilierCard key={i} {...p} />
+            ))}
+          </div>
+          <div className="flex flex-col items-center mt-6">
+            <p className="text-base text-gray-700 mb-4 text-center">
+              Compris ? Passons à l'audit de votre situation actuelle.
+            </p>
+            <Button onClick={() => setSubStep(2)}>Démarrer l'audit →</Button>
+          </div>
+        </>
+      )}
+
+      {subStep === 2 && (
+        <>
+          <div className="p-4 bg-gray-50 rounded-lg space-y-6">
+            {/* Matériel */}
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-md font-semibold mb-3">Inventaire Matériel</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  label="Total systèmes"
+                  name="systemCount"
+                  unit="syst."
+                  value={auditInput.systemCount}
+                  onChange={handleChange}
+                />
+                <FormField
+                  label="Systèmes obsolètes"
+                  name="outdatedSystems"
+                  unit="syst."
+                  value={auditInput.outdatedSystems}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Finances */}
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-md font-semibold mb-3">Finances & RH</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  label="Budget licences"
+                  name="budget"
+                  unit="€"
+                  value={auditInput.budget}
+                  onChange={handleChange}
+                />
+                <FormField
+                  label="Équipe IT"
+                  name="itStaffCount"
+                  unit="pers."
+                  value={auditInput.itStaffCount}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Cloud */}
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <h3 className="text-md font-semibold mb-3">Souveraineté</h3>
+              <FormField
+                label="% données sur Cloud externe"
+                name="externalDataPercent"
+                unit="%"
+                max={100}
+                value={auditInput.externalDataPercent}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-6">
+            <button onClick={() => setSubStep(1)} className="flex items-center gap-2 text-gray-700">
+              <ArrowLeft className="w-5 h-5" /> Retour
+            </button>
+            <Button onClick={handleStartQuiz}>Lancer la simulation →</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
