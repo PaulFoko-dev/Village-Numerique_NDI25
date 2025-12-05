@@ -90,11 +90,6 @@ export interface Step2ChoisesProps {
   onBack: () => void;
 }
 
-export interface Step2ChoisesProps {
-    initialData: ChoicesData;
-    onComplete: (data: ChoicesData) => void;
-    onBack: () => void;
-}
 export interface ChoiceItemProps {
   name: string;
   checked: boolean;

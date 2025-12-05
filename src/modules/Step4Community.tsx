@@ -33,20 +33,24 @@ interface Step4CommunityProps {
 
 const Step4Community: React.FC<Step4CommunityProps> = ({ result, onFinish }) => {
   return (
-    <div className="space-y-6 text-center">
-      <h2 className="text-2xl font-bold text-gray-900">Étape 4 — Rejoindre la communauté</h2>
+    <div className="space-y-6 text-center p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-green-700">4. Rejoindre la communauté NIRD</h2>
 
-      <p className="text-gray-700">
-        Bravo ! Votre score : <span className="font-bold">{result.impactScore}</span> — Économie estimée :
-        <span className="font-bold"> {result.moneySaved} € / an</span>
+      <p className="text-gray-700 text-lg">
+        Félicitations ! Votre score final est de : 
+        <span className="font-extrabold text-3xl block mt-2 text-indigo-600">{result.impactScore}</span>
+      </p>
+      <p className="text-gray-600">
+        Grâce à vos choix NIRD, l'économie annuelle estimée pour votre établissement est de :
+        <span className="font-bold text-xl block mt-1 text-green-700"> {result.moneySaved} €</span>
       </p>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-4 pt-4 border-t mt-4">
         <button
           onClick={onFinish}
-          className="px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+          className="px-6 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition shadow-md"
         >
-          Terminer et partager (simulé)
+          Terminer la simulation
         </button>
 
         <button
@@ -57,9 +61,9 @@ const Step4Community: React.FC<Step4CommunityProps> = ({ result, onFinish }) => 
             );
             alert("Texte du résultat copié dans le presse-papier (simulé).");
           }}
-          className="px-6 py-3 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition"
+          className="px-6 py-3 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 transition font-semibold"
         >
-          Copier le résumé
+          Copier le résumé pour partager
         </button>
       </div>
 

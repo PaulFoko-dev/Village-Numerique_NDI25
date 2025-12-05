@@ -50,7 +50,7 @@ const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-2xl"
+        className="bg-white rounded-2xl w-[70%] h-[75%] p-6 relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

@@ -45,18 +45,14 @@
 // };
 
 // export default Step3Result;
-import React, { useMemo } from "react";
-import type { AuditData } from "./Step1Audit";
-import type { ChoicesData } from "./Step2Choises";
-import { calculator } from "../utils/calculator";
+import React from "react";
+// Import des types nécessaires pour la cohérence
 import type { ResultData } from "../utils/calculator";
 
 interface Step3ResultProps {
-  audit: AuditData;
-  choices: ChoicesData;
   result: ResultData;
   onBack: () => void;
-  onNext: (result: ResultData) => void;
+  onNext: () => void; // onNext n'a pas besoin de ResultData ici, il passe juste à l'étape suivante
 }
 
 const levelFromScore = (score: number) => {
@@ -66,26 +62,23 @@ const levelFromScore = (score: number) => {
   return { label: "Souverain", color: "bg-indigo-500" };
 };
 
-const Step3Result: React.FC<Step3ResultProps> = ({ audit, choices, result, onBack, onNext }) => {
-  // recompute to ensure coherence (in case)
-  const computed = useMemo(() => calculator(audit, choices), [audit, choices]);
-
-  const level = levelFromScore(computed.impactScore);
+const Step3Result: React.FC<Step3ResultProps> = ({ result, onBack, onNext }) => {
+  const level = levelFromScore(result.impactScore);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Étape 3 — Résultats</h2>
-      <p className="text-gray-600">Voici l'impact estimé suite à vos choix.</p>
+    <div className="space-y-6 p-6 bg-white rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-gray-900">3. Résultats de la Simulation</h2>
+      <p className="text-gray-600">Voici l'impact estimé suite à vos choix de stratégies NIRD.</p>
 
-      <div className="p-4 rounded-lg bg-white shadow">
+      <div className="p-4 rounded-lg bg-gray-50 shadow">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-gray-500">Score d'impact</div>
-            <div className="text-3xl font-extrabold">{computed.impactScore}</div>
+            <div className="text-sm text-gray-500">Score d'impact NIRD</div>
+            <div className="text-3xl font-extrabold text-green-700">{result.impactScore}</div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className={`px-3 py-1 rounded-full text-white text-sm ${level.color}`}>
+            <span className={`px-3 py-1 rounded-full text-white text-sm font-semibold ${level.color}`}>
               {level.label}
             </span>
           </div>
@@ -93,34 +86,34 @@ const Step3Result: React.FC<Step3ResultProps> = ({ audit, choices, result, onBac
 
         {/* Progress bar */}
         <div className="mt-4">
-          <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+          <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
             <div
-              className="h-3 rounded-full bg-gradient-to-r from-green-400 to-indigo-500 transition-all"
-              style={{ width: `${Math.max(0, Math.min(100, computed.impactScore))}%` }}
+              className="h-3 rounded-full bg-gradient-to-r from-green-400 to-indigo-500 transition-all duration-500"
+              style={{ width: `${Math.max(0, Math.min(100, result.impactScore))}%` }}
             />
           </div>
         </div>
 
         {/* Message + savings */}
-        <div className="mt-4 text-gray-700">
-          <p className="mb-2">{computed.message}</p>
+        <div className="mt-4 text-gray-700 border-t pt-4">
+          <p className="mb-2 italic">« {result.message} »</p>
           <p className="text-sm text-gray-600">
-            Économie estimée : <span className="font-semibold">{computed.moneySaved} € / an</span>
+            Économie estimée : <span className="font-bold text-green-700">{result.moneySaved} € / an</span>
           </p>
         </div>
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between mt-6">
         <button
           onClick={onBack}
-          className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
+          className="px-5 py-2 rounded-lg bg-gray-300 text-gray-800 hover:bg-gray-400 transition font-semibold"
         >
-          ← Retour
+          ← Modifier les choix
         </button>
 
         <button
-          onClick={() => onNext(computed)}
-          className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+          onClick={onNext}
+          className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-md"
         >
           Continuer →
         </button>
