@@ -16,16 +16,36 @@ const SNAKE_COLOR = "bg-green-500";
 const WALL_COLOR = "bg-gray-700";
 const BACKGROUND_COLOR = "bg-gray-800";
 
+// ...existing code...
 const getRandomPosition = (snake: { x: number, y: number }[]) => {
-  let newFood;
-  do {
-    newFood = {
+  const maxCells = Math.max(0, GRID_SIZE) * Math.max(0, GRID_SIZE);
+  // si la grille est invalide ou pleine, retourne la tête comme fallback
+  if (maxCells === 0 || snake.length >= maxCells) {
+    return { x: snake[0]?.x ?? 0, y: snake[0]?.y ?? 0 };
+  }
+
+  const occupied = new Set(snake.map(s => `${s.x},${s.y}`));
+  const MAX_ATTEMPTS = 200;
+
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const pos = {
       x: Math.floor(Math.random() * GRID_SIZE),
       y: Math.floor(Math.random() * GRID_SIZE),
     };
-  } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
-  return newFood;
+    if (!occupied.has(`${pos.x},${pos.y}`)) return pos;
+  }
+
+  // fallback déterministe : première cellule libre
+  for (let y = 0; y < GRID_SIZE; y++) {
+    for (let x = 0; x < GRID_SIZE; x++) {
+      if (!occupied.has(`${x},${y}`)) return { x, y };
+    }
+  }
+
+  // ultime fallback
+  return { x: 0, y: 0 };
 };
+// ...existing code...
 
 const SnakeGame: React.FC<SnakeGameProps> = ({ onGameEnd, onClose }) => {
   const START_POS = { x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) };
@@ -79,7 +99,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameEnd, onClose }) => {
     setSnake(prevSnake => {
       const newSnake = [...prevSnake];
       const head = newSnake[0];
-      let newHead = { x: head.x, y: head.y };
+      const newHead = { x: head.x, y: head.y };
       const currentDirection = directionRef.current;
 
       switch (currentDirection) {
@@ -156,7 +176,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameEnd, onClose }) => {
   }, [onClose]);
 
   const renderGrid = () => {
-    const cells: JSX.Element[] = [];
+    const cells: React.JSX.Element[] = [];
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
         let className = BACKGROUND_COLOR;

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import logo1 from '../assets/img/logo-k1.png';
 import logo2 from '../assets/img/logo-klub1.png';
-import logo3 from '../assets/img/logo-k2.png';
 import logo4 from '../assets/img/logo-klub-black.png';
 
 /**
