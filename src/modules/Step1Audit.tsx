@@ -45,7 +45,7 @@ const FormField: React.FC<{
   min?: number;
   max?: number;
   value: number;
-  onChange: (e: un) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }> = ({ label, name, unit, min = 0, max, value, onChange }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
