@@ -33,7 +33,7 @@ interface Step4CommunityProps {
 
 const Step4Community: React.FC<Step4CommunityProps> = ({ result, onFinish }) => {
   return (
-    <div className="space-y-6 text-center p-6 bg-white rounded-xl shadow-lg">
+    <div className="space-y-6 text-center p-6">
       <h2 className="text-2xl font-bold text-green-700">4. Rejoindre la communauté NIRD</h2>
 
       <p className="text-gray-700 text-lg">
